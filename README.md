@@ -16,42 +16,52 @@ You can find the [full schematic here.](HW-Doc/Etherbridge_PCB.pdf)
 
 ## Pinout
 
-| Pin Name  | Used As | Comment  |
-| --------  | ------- | -------- |
-| PH0       | HSE_IN (25 MHz) | Use HSE Bypass |
-||||
-| PA1       | USART2_DE (AF7) | RS485 Driver Enable |
-| PA2       | USART2_TX (AF7) | RS485 TX |
-| PA3       | USART2_RX (AF7) | RS485 RX |
-||||
-| PA4       | WS_RSTn | W5500 Reset (active low) |
-| PB12      | WS_INTn | W5500 Interupt line (active low) |
-| PB10      | WS_SPI_CSn | Chip select for W5500 (active low) |
-| PA5       | WS_SPI1_SCK (AF5) | SPI Clock for W5500 |
-| PA6       | WS_SPI1_MISO (AF5) | SPI Data In from W5500 |
-| PA7       | WS_SPI1_MOSI (AF5) | SPI Data Out to W5500 |
-| PA8       | WS_CLK (AF0) (MCO1 - 25MHz) | Main Clock for W5500 |
-||||
-|PB0        | SPI3_MISO (AF5) | SPI Data In from EEPROM |
-|PB1        | SPI3_CLK (AF4)  | SPI Clock for EEPROM |
-|PB2        | SPI3_MOSI       | SPI Data Out to EEPROM |
-|PB13       | EEP_ORG         | EEPROM Memory Organisation: low: 8 Bit; high: 16 Bit |
-|PB14       | EEP_PE          | EEPROM Programming Enable |
-|PB15       | EEP_CS          | EEPROM Chip Select for SPI |
-||||
-| PA9       | USART1_TX (AF7) | Serial AUX TX |
-| PA10      | USART1_RX (AF7) | Serial AUX RX |
-||||
-| PA11      | CAN1_RX (AF9) | CAN RX |
-| PA12      | CAN1_TX (AF9) | CAN TX |
-||||
-| PA13      | SWDIO (AF0)   | SWD Data |
-| PA14      | SWCLK (AF0)   | SWD Clock |
-| PB3       | SWO (AF0)     | SWD Serial data out |
-||||
-| PH1       | GPIO_OUT | User LED - also on spare pin header|
+| MCU Pin | Signal Name | Function                      | Mode      |
+| ------- | ----------- | --------                      | ----      |
+| PH0     | MAIN_CLK    | HSE_IN                        |           |
+|         |             |                               |           |
+| PA1     | RS485_DE    | USART2_DE                     | AF7       |
+| PA2     | RS485_TX    | USART2_TX                     | AF7       |
+| PA3     | RS485_RX    | USART2_RX                     | AF7       |
+|         |             |                               |           |
+| PA4     | WZ_RST_N    | W5500 Reset Active Low        | Output    |
+| PB12    | WZ_INT_N    | W5500 Int In Active Low       | Input     |
+| PB10    | WZ_CS_N     | W5500 Chip Select Active Low  | Output    |
+| PA5     | WZ_SCK      | SPI1_CLK                      | AF5       |
+| PA6     | WZ_MISO     | SPI1_MISO                     | AF5       |
+| PA7     | WZ_MOSI     | SPI1_MOSI                     | AF5       |
+| PA8     | WZ_CLK      | MCO1 W5500 Main Clock (25MHz) | AF0       |
+|         |             |                               |           |
+| PB15    | EEP_CS      | 93LC86 Chip Select            | Output    |
+| PB1     | EEP_SCK     | SPI3_SCK                      | AF4       |
+| PB0     | EEP_MISO    | SPI3_MISO                     | AF5       |
+| PB2     | EEP_MOSI    | SPI3_MOSI                     | AF7       |
+| PB13    | EEP_ORG     | MemOrg: low: x8; high: x16    | Output    |
+| PB14    | EEP_PE      | Program Enable                | Output    |
+|         |             |                               |           |
+| PA9     | SER_TX      | USART1_TX                     | AF7       |
+| PA10    | SER_RX      | USART1_RX                     | AF7       |
+|         |             |                               |           |
+| PA11    | CAN_RX      | FDCAN1_RX                     | AF9       |
+| PA12    | CAN_TX      | FDCAN1_TX                     | AF9       |
+|         |             |                               |           |
+| PA13    | SWDIO       | Serial Wire Debug I/O         | AF0       |
+| PA14    | SWCLK       | Serial Wire Debug CLK         | AF0       |
+| PB3     | SWO         | Serial Wire  Debug Data Out   | AF0       |
+|         |             |                               |           |
+| PH1     | LED         | Spare Pin with LED            | Output    |
+|         |             |                               |           |
+| PA0     | IO_PA0      | Spare Pin                     | Analog In |
+| PA15    | IO_PA15     | Spare Pin                     | Analog In |
+| PB4     | IO_PB4      | Spare Pin                     | Analog In |
+| PB5     | IO_PB5      | Spare Pin                     | Analog In |
+| PB6     | IO_PB6      | Spare Pin                     | Analog In |
+| PB7     | IO_PB7      | Spare Pin                     | Analog In |
+| PB8     | IO_PB8      | Spare Pin                     | Analog In |
+| PC13    | IO_PC13     | Spare Pin                     | Analog In |
+| PC14    | IO_PC14     | Spare Pin                     | Analog In |
+| PC15    | IO_PC15     | Spare Pin                     | Analog In |
 
-PC13 - PC15, PA0, PA15 and PB4 - PB8 are currently not in use and connected to the spare pin header.
 
 
 
