@@ -68,6 +68,15 @@ constexpr uint32_t inputClkRange = 0; //1 - 2 MHz
 constexpr uint32_t pllSrc = BitsAndFields::writeBits(0, clkSrcHSE, clkSrcFieldWidth, RCC_PLL1CFGR_PLL1SRC_Pos);
 }
 
+namespace MCO1Config
+{
+constexpr uint8_t prescaler = 1;
+constexpr uint8_t prescalerFieldWidth = 4;
+
+constexpr uint8_t clockSrc = 2; // 0: HSI; 1: LSE; 2: HSE; 3: PLL1_Q; 4 HSI48
+constexpr uint8_t clockSrcFieldWidth = 3;
+}
+
 
 
 

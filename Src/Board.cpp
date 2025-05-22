@@ -8,6 +8,10 @@
 
 #include "SystemClocks.hpp"
 #include "BoardPins.hpp"
+#include "BoardConfig.hpp"
+#include "BitsAndFields.hpp"
+#include "SysTick.h"
+#include "FastIo.hpp"
 
 static void enableGpioClocks(void)
 {
@@ -48,13 +52,25 @@ static void enableApb2Clocks(void)
     RCC->APB2RSTR  &= ~(RCC_APB2RSTR_SPI1RST | RCC_APB2RSTR_USART1RST);
 }
 
+static void enableMCO1Clk(void)
+{
+    uint32_t rccReg = RCC->CFGR1;
+    rccReg = BitsAndFields::writeBits(rccReg, MCO1Config::clockSrc, MCO1Config::clockSrcFieldWidth, RCC_CFGR1_MCO1SEL_Pos);
+    rccReg = BitsAndFields::writeBits(rccReg, MCO1Config::prescaler, MCO1Config::prescalerFieldWidth, RCC_CFGR1_MCO1PRE_Pos);
+    RCC->CFGR1 = rccReg;
+}
+
 void BRD_init(void)
 {
     SysClk_setup250MHz();
+    enableMCO1Clk();
     enableGpioClocks();
     enableApb1Clocks();
     enableApb2Clocks();
-    boardPins.init(); //Call after all other peripherials have been initialised.
+
+    SysTick_Init();
+
+    boardPins.init(); //Call after all other internal peripherials have been initialised.
 }
 
 
