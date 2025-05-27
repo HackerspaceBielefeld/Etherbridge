@@ -12,6 +12,7 @@
 #include "BitsAndFields.hpp"
 #include "SysTick.h"
 #include "FastIo.hpp"
+#include "SPI_Channel.h"
 
 static void enableGpioClocks(void)
 {
@@ -19,16 +20,6 @@ static void enableGpioClocks(void)
     RCC->AHB2ENR    |= RCC_AHB2ENR_GPIOAEN | RCC_AHB2ENR_GPIOBEN | RCC_AHB2ENR_GPIOCEN | RCC_AHB2ENR_GPIOHEN;
     RCC->AHB2RSTR   |= RCC_AHB2RSTR_GPIOARST | RCC_AHB2RSTR_GPIOBRST | RCC_AHB2RSTR_GPIOCRST | RCC_AHB2RSTR_GPIOHRST;
     RCC->AHB2RSTR   &= ~(RCC_AHB2RSTR_GPIOARST | RCC_AHB2RSTR_GPIOBRST | RCC_AHB2RSTR_GPIOCRST | RCC_AHB2RSTR_GPIOHRST);
-
-    //Enable USART2 + SPI3 clocks and reset them
-    RCC->APB1LENR   |= RCC_APB1LENR_SPI3EN | RCC_APB1LENR_USART2EN;
-    RCC->APB1LRSTR  |= RCC_APB1LRSTR_SPI3RST | RCC_APB1LRSTR_USART2RST;
-    RCC->APB1LRSTR  &= ~(RCC_APB1LRSTR_SPI3RST | RCC_APB1LRSTR_USART2RST);
-
-    //Enable USART1 + SPI1 clocks and reset them.
-    RCC->APB2ENR   |= RCC_APB2ENR_SPI1EN | RCC_APB2ENR_USART1EN;
-    RCC->APB2RSTR  |= RCC_APB2RSTR_SPI1RST | RCC_APB2RSTR_USART1RST;
-    RCC->APB2RSTR  &= ~(RCC_APB2RSTR_SPI1RST | RCC_APB2RSTR_USART1RST);
 }
 
 static void enableApb1Clocks(void)
@@ -71,8 +62,26 @@ void BRD_init(void)
     SysTick_Init();
 
     boardPins.init(); //Call after all other internal peripherials have been initialised.
+
+    NVIC_SetPriority(SPI1_IRQn, 0);
+    NVIC_EnableIRQ(SPI1_IRQn);
+
+    NVIC_SetPriority(SPI3_IRQn, 0);
+    NVIC_EnableIRQ(SPI3_IRQn);
 }
 
+SPI_Master wzSPI(WzIfConfig::spi);
+SPI_Channel wzIf(&wzSPI, WzIfConfig::csPin, SPI_Channel::CS_Polarity::activeLow);
 
+SPI_Master eepSpi(EepIfConfig::spi);
+SPI_Channel eepIf(&eepSpi, EepIfConfig::csPin, SPI_Channel::CS_Polarity::activeHigh);
 
+extern "C" void SPI1_IRQHandler(void)
+{
+    wzSPI.handler();
+}
 
+extern "C" void SPI3_IRQHandler(void)
+{
+    eepSpi.handler();
+}

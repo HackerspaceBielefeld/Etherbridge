@@ -64,3 +64,10 @@ TEST(WriteBits, Write0x4321ToPos32)
 {
     EXPECT_EQ(writeBits(0xAAAAAAAA, 0x4321, 16, 32), 0xAAAAAAAA);
 }
+
+//
+TEST(WriteBitField, Write3to2posBitFieldAt2)
+{
+    EXPECT_EQ(writeBitField(0x0, 3, 2, 2), 0x30);
+}
+

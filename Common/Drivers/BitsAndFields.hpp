@@ -70,7 +70,7 @@ namespace BitsAndFields{
      * \param base  base value containing the bitfield to be modified.
      * \param val   value of bit field to be written.
      * \param len   length of bitfield.
-     * \param pos   right-aligned position of bit field.
+     * \param pos   rightmost BIT POSITION in field.
      *
      * \return      base with applied bitfield value.
      */
@@ -84,6 +84,21 @@ namespace BitsAndFields{
         uint32_t clrField = base & clrBitMask(len, pos);
         uint32_t prunedVal = val & setBitMask(len, 0);
         return clrField | (prunedVal << pos);
+    }
+
+    /**
+     * Writes len bits of val into base at pos * len and returns modified base.
+     *
+     * \param base  base value containing the bitfield to be modified.
+     * \param val   value of bit field to be written.
+     * \param len   length of bitfield.
+     * \param pos   right aligned position of BIT FIELD. The resultin BIT POSITION is pos x len!
+     *
+     * \return      base with applied bitfield value.
+     */
+    constexpr uint32_t writeBitField(uint32_t base, uint32_t val, uint8_t len, uint8_t pos)
+    {
+        return writeBits(base, val, len, pos * len);
     }
 
     /**

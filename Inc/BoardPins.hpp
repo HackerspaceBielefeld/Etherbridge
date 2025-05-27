@@ -166,9 +166,9 @@ private:
         {Port::PORTA, 11, Mode::AF,     Speed::LS,  9, 0},   //CAN_RX
         {Port::PORTA, 12, Mode::AF,     Speed::LS,  9, 0},   //CAN_TX
 
-        {Port::PORTA, 13, Mode::AF,     Speed::LS,  0, 0},   //SWDIO
-        {Port::PORTA, 14, Mode::AF,     Speed::LS,  0, 0},   //SWCLK
-        {Port::PORTB,  3, Mode::AF,     Speed::LS,  0, 0},   //SWO
+        {Port::PORTA, 13, Mode::AF,     Speed::HS,  0, 0},   //SWDIO
+        {Port::PORTA, 14, Mode::AF,     Speed::HS,  0, 0},   //SWCLK
+        {Port::PORTB,  3, Mode::AF,     Speed::HS,  0, 0},   //SWO
 
         {Port::PORTH,  1, Mode::OUTPUT, Speed::LS,  0, 0},   //LED
 
@@ -211,11 +211,11 @@ private:
                 switch(field)
                 {
                     case ConfField::ModeReg:
-                        reg = BitsAndFields::writeBits(reg, static_cast<uint8_t>(p.mode), 2, p.pinPos);
+                        reg = BitsAndFields::writeBitField(reg, static_cast<uint8_t>(p.mode), 2, p.pinPos);
                         break;
 
                     case ConfField::SpeedReg:
-                        reg = BitsAndFields::writeBits(reg, static_cast<uint8_t>(p.speed), 2, p.pinPos);
+                        reg = BitsAndFields::writeBitField(reg, static_cast<uint8_t>(p.speed), 2, p.pinPos);
                         break;
 
                     case ConfField::AflReg:
@@ -224,7 +224,7 @@ private:
 
                         if(af < 8)
                         {
-                            reg = BitsAndFields::writeBits(reg, af, 4, p.pinPos);
+                            reg = BitsAndFields::writeBitField(reg, af, 4, p.pinPos);
                         }
                         break;
                     }
@@ -235,13 +235,13 @@ private:
 
                         if(af >= 8)
                         {
-                            reg = BitsAndFields::writeBits(reg, af, 4, p.pinPos);
+                            reg = BitsAndFields::writeBitField(reg, af, 4, p.pinPos);
                         }
                         break;
                     }
 
                     case ConfField::OdReg:
-                        reg = BitsAndFields::writeBits(reg, p.oState, 1, p.pinPos);
+                        reg = BitsAndFields::writeBitField(reg, p.oState, 1, p.pinPos);
                         break;
                 }
             }

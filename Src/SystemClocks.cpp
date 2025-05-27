@@ -93,7 +93,7 @@ void SysClk_setup250MHz(void)
 
     //Perform system clock switch
     uint32_t tmpCfgReg = RCC->CFGR1;
-    tmpCfgReg = BitsAndFields::writeBits(tmpCfgReg, 3, 2, RCC_CFGR1_SW_Pos);
+    tmpCfgReg = BitsAndFields::writeBitField(tmpCfgReg, 3, 2, RCC_CFGR1_SW_Pos);
     RCC->CFGR1 = tmpCfgReg;
     while(((RCC->CFGR1 & RCC_CFGR1_SWS) >> RCC_CFGR1_SWS_Pos) != 3);
 

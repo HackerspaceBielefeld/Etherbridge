@@ -11,6 +11,8 @@
 #include <cstdint>
 #include "BitsAndFields.hpp"
 #include "stm32h5xx.h"
+#include "SPI_Master.h"
+#include "BoardPins.hpp"
 
 /*
  * Flash configuration parameters
@@ -60,7 +62,7 @@ constexpr uint32_t R_OutputDivider = BitsAndFields::writeBits(0, postDivFactor-1
 constexpr uint32_t vcoMulti = BitsAndFields::writeBits(0, multFactor-1, multFieldWidth, RCC_PLL1DIVR_PLL1N_Pos);
 //Only Output P is enabled
 constexpr uint32_t P_OutputEnable = RCC_PLL1CFGR_PLL1PEN;
-constexpr uint32_t Q_OutputEnable = 0;
+constexpr uint32_t Q_OutputEnable = RCC_PLL1CFGR_PLL1QEN; //SPI kernel clock
 constexpr uint32_t R_OutputEnable = 0;
 constexpr uint32_t prescaler = BitsAndFields::writeBits(0, preDivFactor, preDivFieldWidth, RCC_PLL1CFGR_PLL1M_Pos); //(1,25MHz Input Clk)
 constexpr uint32_t vcoRangeSelector = RCC_PLL1CFGR_PLL1VCOSEL_Pos; //medium VCO range (150 - 420MHz)
@@ -77,7 +79,17 @@ constexpr uint8_t clockSrc = 2; // 0: HSI; 1: LSE; 2: HSE; 3: PLL1_Q; 4 HSI48
 constexpr uint8_t clockSrcFieldWidth = 3;
 }
 
+namespace WzIfConfig
+{
+constexpr BoardPins::Pin csPin = BoardPins::Pin::WZ_CS_N;
+SPI_TypeDef * const spi = SPI1;
+}
 
+namespace EepIfConfig
+{
+constexpr BoardPins::Pin csPin = BoardPins::Pin::EEP_CS;
+SPI_TypeDef * const spi = SPI3;
+}
 
 
 #endif /* BOARDCONFIG_HPP_ */

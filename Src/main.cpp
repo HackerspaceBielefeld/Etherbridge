@@ -17,11 +17,28 @@
  */
 
 #include "Board.hpp"
+#include "SPI_Master.h"
+#include "SysTick.h"
+#include "FastIo.hpp"
 
+uint32_t millisNow;
+
+FastIo ledPin(BoardPins::Pin::LED);
+const SPI_Master::SPI_Config eepSpiCfg = {
+        SPI_Master::Prescaler::DIV_256,
+        SPI_Master::SPI_Mode::MODE_0,
+        SPI_Master::BitOrder::MSB_FIRST
+};
+
+uint8_t test = 0x55;
 void setup(void)
 {
     BRD_init();
+    millisNow = SysTick_GetMillis();
 
+    eepIf.init(&eepSpiCfg);
+
+    eepIf.begin();
 }
 
 int main(void)
@@ -29,5 +46,26 @@ int main(void)
     setup();
 
     //Main loop
-	for(;;);
+	for(;;)
+	{
+	    if(SysTick_GetMillis() - millisNow >= 500)
+	    {
+	        millisNow = SysTick_GetMillis();
+	        if(ledPin.get())
+	        {
+	            ledPin.clr();
+	        }
+	        else
+	        {
+	            ledPin.set();
+	            eepIf.write(&test, 1);
+
+	            //eepIf.end();
+	        }
+
+
+	    }
+	}
 }
+
+
