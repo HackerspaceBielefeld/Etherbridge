@@ -6,13 +6,13 @@
  */
 #include "stm32h5xx.h"
 
+#include "Board.hpp"
 #include "SystemClocks.hpp"
 #include "BoardPins.hpp"
 #include "BoardConfig.hpp"
 #include "BitsAndFields.hpp"
 #include "SysTick.h"
 #include "FastIo.hpp"
-#include "SPI_Channel.h"
 
 static void enableGpioClocks(void)
 {
@@ -68,6 +68,9 @@ void BRD_init(void)
 
     NVIC_SetPriority(SPI3_IRQn, 0);
     NVIC_EnableIRQ(SPI3_IRQn);
+
+    NVIC_SetPriority(USART2_IRQn, 0);
+    NVIC_EnableIRQ(USART2_IRQn);
 }
 
 SPI_Master wzSPI(WzIfConfig::spi);
@@ -75,6 +78,8 @@ SPI_Channel wzIf(&wzSPI, WzIfConfig::csPin, SPI_Channel::CS_Polarity::activeLow)
 
 SPI_Master eepSpi(EepIfConfig::spi);
 SPI_Channel eepIf(&eepSpi, EepIfConfig::csPin, SPI_Channel::CS_Polarity::activeHigh);
+
+RS485<256> modbus(USART2);
 
 extern "C" void SPI1_IRQHandler(void)
 {
@@ -84,4 +89,9 @@ extern "C" void SPI1_IRQHandler(void)
 extern "C" void SPI3_IRQHandler(void)
 {
     eepSpi.handler();
+}
+
+extern "C" void USART2_IRQHandler(void)
+{
+    modbus.handler();
 }

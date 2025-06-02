@@ -24,6 +24,8 @@
 uint32_t millisNow;
 
 FastIo ledPin(BoardPins::Pin::LED);
+FastIo wsRstPin(BoardPins::Pin::WZ_RST_N);
+
 const SPI_Master::SPI_Config eepSpiCfg = {
         SPI_Master::Prescaler::DIV_256,
         SPI_Master::SPI_Mode::MODE_0,
@@ -31,6 +33,10 @@ const SPI_Master::SPI_Config eepSpiCfg = {
 };
 
 uint8_t test = 0x55;
+
+uint8_t testBuf[256];
+size_t testBufSize;
+
 void setup(void)
 {
     BRD_init();
@@ -39,12 +45,15 @@ void setup(void)
     eepIf.init(&eepSpiCfg);
 
     eepIf.begin();
+    modbus.init(1000000);
+    wsRstPin.set();
 }
 
 int main(void)
 {
     setup();
 
+    modbus.freeRxBuffer();
     //Main loop
 	for(;;)
 	{
@@ -59,13 +68,39 @@ int main(void)
 	        {
 	            ledPin.set();
 	            eepIf.write(&test, 1);
-
-	            //eepIf.end();
 	        }
-
-
 	    }
+	            if(modbus.isRxDone())
+	            {
+	                testBufSize = modbus.isRxAvail();
+	                if(testBufSize > 256)
+	                    testBufSize = 256;
+	                uint8_t * rxBuf = modbus.getRxBuffer();
+
+	                for(size_t i = 0; i < testBufSize; i++)
+	                {
+	                    testBuf[i] = rxBuf[i];
+	                }
+
+	                modbus.freeRxBuffer();
+	                modbus.send(testBuf, testBufSize);
+	            }
+
+
+
+
+
+
 	}
 }
 
+extern "C" void NMI_Handler(void)
+{
+    for(;;);
+}
+
+extern "C" void HardFault_Handler(void)
+{
+    for(;;);
+}
 

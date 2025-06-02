@@ -10,12 +10,15 @@
 
 #include "SPI_Master.h"
 #include "SPI_Channel.h"
+#include "RS485.hpp"
 
 extern SPI_Master wzSPI;
 extern SPI_Channel wzIf;
 
 extern SPI_Master eepSpi;
 extern SPI_Channel eepIf;
+
+extern RS485<256> modbus;
 
 void BRD_init(void);
 
