@@ -186,16 +186,17 @@
 
   ErrorStatus SPI_Master::tryLock(void)
   {
-    if(__LDREXB(&lock))
-    {
-      return ERROR;
-    }
-    if(__STREXB(1, &lock) == 0)
-    {
-      __DMB();
+//    if(__LDREXB(&lock))
+//    {
+//      return ERROR;
+//    }
+//    if(__STREXB(1, &lock) == 0)
+//    {
+//      __DMB();
+//      return SUCCESS;
+//    }
+//    return ERROR;
       return SUCCESS;
-    }
-    return ERROR;
   }
 
   void SPI_Master::unlock(void)
@@ -227,7 +228,7 @@
         {
           *spiDr = dBuf[txPos];
         }
-        txPos++;
+        txPos = txPos + 1;
       }
       else
       {
@@ -246,7 +247,7 @@
       {
         uint8_t tmp = *spiDr;
       }
-      rxPos++;
+      rxPos = rxPos + 1;
 
       //Wenn letztes Datum gelesen, Verbindung beenden.
       if(rxPos == dataLen)

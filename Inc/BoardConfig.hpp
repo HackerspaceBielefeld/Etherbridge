@@ -83,13 +83,32 @@ namespace WzIfConfig
 {
 constexpr BoardPins::Pin csPin = BoardPins::Pin::WZ_CS_N;
 SPI_TypeDef * const spi = SPI1;
+constexpr SPI_Master::SPI_Config spiConfig = {
+    SPI_Master::Prescaler::DIV_8,
+    SPI_Master::SPI_Mode::MODE_0,
+    SPI_Master::BitOrder::MSB_FIRST
+};
 }
 
 namespace EepIfConfig
 {
 constexpr BoardPins::Pin csPin = BoardPins::Pin::EEP_CS;
 SPI_TypeDef * const spi = SPI3;
+constexpr SPI_Master::SPI_Config spiConfig = {
+    SPI_Master::Prescaler::DIV_256,
+    SPI_Master::SPI_Mode::MODE_0,
+    SPI_Master::BitOrder::MSB_FIRST
+};
 }
+
+namespace ModbusConfig
+{
+USART_TypeDef * const usart = USART2;
+constexpr uint32_t baudrate = 115200;
+constexpr uint8_t bitsPerByte = 10; //8N1: 1 Startbit + 8 Databist + 1 Stopbit
+}
+
+TIM_TypeDef * const microTim = TIM2;
 
 
 #endif /* BOARDCONFIG_HPP_ */

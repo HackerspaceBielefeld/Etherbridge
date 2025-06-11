@@ -76,6 +76,11 @@ public:
     return SPIx->dummy(len);
   }
 
+  ErrorStatus shift(uint8_t * const data, size_t len)
+  {
+      return SPIx->shift(data, len);
+  }
+
   bool isBusy(void)
   {
     return SPIx->isBusy();

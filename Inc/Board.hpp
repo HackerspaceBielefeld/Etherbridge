@@ -13,7 +13,8 @@
 #include "RS485.hpp"
 
 extern SPI_Master wzSPI;
-extern SPI_Channel wzIf;
+extern SPI_Channel wzChannel;
+extern FastIo wzRstPin;
 
 extern SPI_Master eepSpi;
 extern SPI_Channel eepIf;

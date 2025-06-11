@@ -137,6 +137,7 @@ private:
         Speed   speed   : 2;    //Pin driver strength
         uint8_t af      : 4;    //Pin alternate function
         uint8_t oState  : 1;    //Pin initial output state
+        //uint8_t pullUp  : 1;    //Pullup enable
     };
 
     constexpr static PinCfg pinConf[] =

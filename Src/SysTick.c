@@ -106,6 +106,11 @@ uint32_t SysTick_GetMillis(void)
   return SysTickCnt;
 }
 
+uint16_t SysTick_GetRandom(void)
+{
+    return SysTick->VAL & 0xffff;
+}
+
 /*******************************************************************************
 *     END OF FILE
 *******************************************************************************/

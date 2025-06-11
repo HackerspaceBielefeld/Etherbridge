@@ -17,20 +17,82 @@
  */
 
 #include "Board.hpp"
+#include "BoardConfig.hpp"
 #include "SPI_Master.h"
 #include "SysTick.h"
 #include "FastIo.hpp"
 
+#include "Ethernet.h"
+#include "EthernetUdp.h"
+#include "ProjectSettings.h"
+#include "CircularBuffer.hpp"
+#include "Timer.h"
+#include "ModbusTCP.h"
+#include "main.h"
+#include "ModbusRTU.h"
+
+enum flow_t : uint8_t {
+  DATA_TX,
+  DATA_RX,
+  DATA_LAST  // Number of status flags in this enum. Must be the last element within this enum!!
+};
+
+data_t data;
+
+// bool arrays for storing Modbus RTU status of individual slaves
+uint8_t slaveStatus[SLAVE_ERROR_0B_QUEUE + 1][(MAX_SLAVES + 1 + 7) / 8];  // SLAVE_ERROR_0B_QUEUE is the last status of slaves
+
+// each request is stored in 3 queues (all queues are written to, read and deleted in sync)
+CircularBuffer<header_t, MAX_QUEUE_REQUESTS> queueHeaders;  // queue of requests' headers and metadata
+CircularBuffer<uint8_t, MAX_QUEUE_DATA> queueData;             // queue of PDU data
+
+/****** ETHERNET AND SERIAL ******/
+
+uint8_t maxSockNum = MAX_SOCK_NUM;
+
+#ifdef ENABLE_DHCP
+bool dhcpSuccess = false;
+#endif /* ENABLE_DHCP */
+
+EthernetUDP Udp;
+EthernetServer modbusServer(DEFAULT_CONFIG.tcpPort);
+EthernetServer webServer(DEFAULT_CONFIG.webPort);
+
+MicroTimer recvMicroTimer(microTim);
+MicroTimer sendMicroTimer(microTim);
+Timer eepromTimer;    // timer to delay writing statistics to EEPROM
+Timer checkEthTimer;  // timer to check SPI connection with ethernet shield
+
+uint8_t scanCounter = 1;  // Start Modbus RTU scan after boot
+
+
+uint8_t serialState;
+
+/****** RUN TIME AND DATA COUNTERS ******/
+
+bool scanReqInQueue = false;  // Scan request is in the queue
+uint8_t priorityReqInQueue;      // Counter for priority requests in the queue
+
+uint8_t response[MAX_RESPONSE_LEN];  // buffer to store the last Modbus response
+uint8_t responseLen;                 // stores actual length of the response shown in WebUI
+
+uint16_t queueDataSize;
+uint8_t queueHeadersSize;
+
+#ifdef ENABLE_EXTENDED_WEBUI
+// store uptime seconds (includes seconds counted before millis() overflow)
+uint32_t seconds;
+// store last millis() so that we can detect millis() overflow
+uint32_t last_milliseconds = 0;
+// store seconds passed until the moment of the overflow so that we can add them to "seconds" on the next call
+int32_t remaining_seconds;
+// Data counters (we only use uint32_t in ENABLE_EXTENDED_WEBUI, to save flash memory)
+#endif /* ENABLE_EXTENDED_WEBUI */
+
 uint32_t millisNow;
 
 FastIo ledPin(BoardPins::Pin::LED);
-FastIo wsRstPin(BoardPins::Pin::WZ_RST_N);
 
-const SPI_Master::SPI_Config eepSpiCfg = {
-        SPI_Master::Prescaler::DIV_256,
-        SPI_Master::SPI_Mode::MODE_0,
-        SPI_Master::BitOrder::MSB_FIRST
-};
 
 uint8_t test = 0x55;
 
@@ -40,23 +102,38 @@ size_t testBufSize;
 void setup(void)
 {
     BRD_init();
+
+    data.config = DEFAULT_CONFIG;
+    data.mac[5] = 0x90;
+    data.mac[4] = 0xA2;
+    data.mac[3] = 0xDA;
+    data.mac[2] = 0x01;
+    data.mac[1] = 0x02;
+    data.mac[0] = 0x03;
+
+    modbus.init(ModbusConfig::baudrate);
+    startEthernet();
+
     millisNow = SysTick_GetMillis();
 
-    eepIf.init(&eepSpiCfg);
+    eepIf.init(&EepIfConfig::spiConfig);
 
     eepIf.begin();
-    modbus.init(1000000);
-    wsRstPin.set();
 }
 
 int main(void)
 {
     setup();
 
-    modbus.freeRxBuffer();
     //Main loop
 	for(;;)
 	{
+//	    scanRequest();
+	    sendSerial();
+	    recvUdp();
+	    recvSerial();
+	    manageSockets();
+
 	    if(SysTick_GetMillis() - millisNow >= 500)
 	    {
 	        millisNow = SysTick_GetMillis();
@@ -67,29 +144,8 @@ int main(void)
 	        else
 	        {
 	            ledPin.set();
-	            eepIf.write(&test, 1);
 	        }
 	    }
-	            if(modbus.isRxDone())
-	            {
-	                testBufSize = modbus.isRxAvail();
-	                if(testBufSize > 256)
-	                    testBufSize = 256;
-	                uint8_t * rxBuf = modbus.getRxBuffer();
-
-	                for(size_t i = 0; i < testBufSize; i++)
-	                {
-	                    testBuf[i] = rxBuf[i];
-	                }
-
-	                modbus.freeRxBuffer();
-	                modbus.send(testBuf, testBufSize);
-	            }
-
-
-
-
-
 
 	}
 }

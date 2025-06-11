@@ -152,11 +152,12 @@ public:
         {
             if(rxBufCnt < RX_BUF_SIZE)
             {
-                rxBuf[rxBufCnt++] = usart->RDR;
+                rxBuf[rxBufCnt] = usart->RDR;
+                rxBufCnt = rxBufCnt + 1;
             }
             else
             {
-                uint8_t dummy = usart->RDR;
+                (void)usart->RDR;
                 rxError = true;
             }
 
@@ -176,10 +177,12 @@ public:
         //Handle TX
         while((txBufCnt < txBufSize) && (usart->ISR & USART_ISR_TXE_TXFNF))
         {
-            usart->TDR = txBuf[txBufCnt++];
+            usart->TDR = txBuf[txBufCnt];
+            txBufCnt = txBufCnt + 1;
             if(txBufCnt == txBufSize)
             {
                 usart->CR3 &= ~(USART_CR3_TXFTIE);
+                txBufSize = 0;
             }
         }
 

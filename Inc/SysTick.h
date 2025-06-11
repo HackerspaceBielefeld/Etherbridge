@@ -47,6 +47,7 @@ void SysTick_Init(void);
 void SysTick_Handler(void);
 
 uint32_t SysTick_GetMillis(void);
+uint16_t SysTick_GetRandom(void);
 
 /*******************************************************************************
 *     END OF FILE
