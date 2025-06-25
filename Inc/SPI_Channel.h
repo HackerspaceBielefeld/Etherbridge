@@ -66,6 +66,16 @@ public:
     return SPIx->write(data, len);
   }
 
+  ErrorStatus isAvail(void)
+  {
+      return SPIx->isAvail();
+  }
+
+  uint8_t read(void)
+  {
+      return SPIx->read();
+  }
+
   ErrorStatus read(uint8_t * const data, const size_t len)
   {
     return SPIx->read(data, len);
@@ -118,7 +128,7 @@ private:
     }
     else
     {
-        csPin.set();
+        csPin.clr();
     }
   }
 };

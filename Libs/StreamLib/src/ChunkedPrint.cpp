@@ -52,8 +52,12 @@ void ChunkedPrint::flush() {
   if (!pos)
     return;
   uint8_t l = (firstChunk ? 2 : 4) + (pos > 0xFF ? 3 : (pos <= 0xF ? 1 : 2));
+//  uint8_t l = 2 + (pos > 0xFF ? 3 : (pos <= 0xF ? 1 : 2));
   sprintf((char*) buffer - l, (firstChunk ? ("%x\r") : ("\r\n%x\r")), pos);
+//  sprintf((char*) buffer - l, "%x\r", pos);
   (buffer - 1)[0] = '\n';
+//  buffer[pos++] = '\r';
+//  buffer[pos++] = '\n';
   if (firstChunk) {
     firstChunk = false;
   }

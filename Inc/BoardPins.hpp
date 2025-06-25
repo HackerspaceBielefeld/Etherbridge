@@ -22,13 +22,13 @@ public:
         RS485_TX    = 1,
         RS485_RX    = 2,
 
-        WZ_RST_N    = 3,
-        WZ_INT_N    = 4,
-        WZ_CS_N     = 5,
-        WZ_SCK      = 6,
-        WZ_MISO     = 7,
-        WZ_MOSI     = 8,
-        WZ_CLK      = 9,
+        W_RST_N    = 3,
+        W_INT_N    = 4,
+        W_CS_N     = 5,
+        W_SCK      = 6,
+        W_MISO     = 7,
+        W_MOSI     = 8,
+        W_CLK      = 9,
 
         EEP_CS      = 10,
         EEP_SCK     = 11,
@@ -221,22 +221,18 @@ private:
 
                     case ConfField::AflReg:
                     {
-                        uint8_t af = static_cast<uint8_t>(p.af);
-
-                        if(af < 8)
+                        if(p.pinPos < 8)
                         {
-                            reg = BitsAndFields::writeBitField(reg, af, 4, p.pinPos);
+                            reg = BitsAndFields::writeBitField(reg, p.af, 4, p.pinPos);
                         }
                         break;
                     }
 
                     case ConfField::AfhReg:
                     {
-                        uint8_t af = static_cast<uint8_t>(p.af);
-
-                        if(af >= 8)
+                        if(p.pinPos >= 8)
                         {
-                            reg = BitsAndFields::writeBitField(reg, af, 4, p.pinPos);
+                            reg = BitsAndFields::writeBitField(reg, p.af, 4, p.pinPos - 8);
                         }
                         break;
                     }

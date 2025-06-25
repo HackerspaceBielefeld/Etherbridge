@@ -12,6 +12,6 @@
 #define SYSTEMCLOCKS_HPP_
 
 void SysClk_setup250MHz(void);
-
+void McuICacheEnable(void);
 
 #endif /* SYSTEMCLOCKS_HPP_ */

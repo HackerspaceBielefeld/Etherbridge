@@ -85,6 +85,11 @@ enum state_t : uint8_t {
   WAITING
 };
 
+
+#ifdef ENABLE_DHCP
+extern bool dhcpSuccess;
+#endif /* ENABLE_DHCP */
+
 extern data_t data;
 
 extern uint8_t slaveStatus[SLAVE_ERROR_0B_QUEUE + 1][(MAX_SLAVES + 1 + 7) / 8];

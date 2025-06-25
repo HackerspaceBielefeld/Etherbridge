@@ -81,7 +81,7 @@ constexpr uint8_t clockSrcFieldWidth = 3;
 
 namespace WzIfConfig
 {
-constexpr BoardPins::Pin csPin = BoardPins::Pin::WZ_CS_N;
+constexpr BoardPins::Pin csPin = BoardPins::Pin::W_CS_N;
 SPI_TypeDef * const spi = SPI1;
 constexpr SPI_Master::SPI_Config spiConfig = {
     SPI_Master::Prescaler::DIV_8,

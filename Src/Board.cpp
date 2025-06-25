@@ -14,12 +14,25 @@
 #include "SysTick.h"
 #include "FastIo.hpp"
 
-static void enableGpioClocks(void)
+uint32_t SYS_uid[3];
+
+static void updateUid(void)
+{
+    SYS_uid[0] = *(volatile const uint32_t*) (UID_BASE);
+    SYS_uid[1] = *(volatile const uint32_t*) (UID_BASE + 4);
+    SYS_uid[2] = *(volatile const uint32_t*) (UID_BASE + 8);
+}
+
+static void enableAhbClocks(void)
 {
     //Enable GPIO A-D clocks and reset them.
     RCC->AHB2ENR    |= RCC_AHB2ENR_GPIOAEN | RCC_AHB2ENR_GPIOBEN | RCC_AHB2ENR_GPIOCEN | RCC_AHB2ENR_GPIOHEN;
     RCC->AHB2RSTR   |= RCC_AHB2RSTR_GPIOARST | RCC_AHB2RSTR_GPIOBRST | RCC_AHB2RSTR_GPIOCRST | RCC_AHB2RSTR_GPIOHRST;
     RCC->AHB2RSTR   &= ~(RCC_AHB2RSTR_GPIOARST | RCC_AHB2RSTR_GPIOBRST | RCC_AHB2RSTR_GPIOCRST | RCC_AHB2RSTR_GPIOHRST);
+
+    RCC->AHB1ENR    |= RCC_AHB1ENR_CRCEN;
+    RCC->AHB1RSTR   |= RCC_AHB1RSTR_CRCRST;
+    RCC->AHB1RSTR   &= ~(RCC_AHB1RSTR_CRCRST);
 }
 
 static void enableApb1Clocks(void)
@@ -77,11 +90,18 @@ void BRD_init(void)
 {
     SysClk_setup250MHz();
     enableMCO1Clk();
-    enableGpioClocks();
+    enableAhbClocks();
     enableApb1Clocks();
     enableApb2Clocks();
 
+    updateUid();
+    McuICacheEnable();
+
     SysTick_Init();
+
+    wzChannel.init(&WzIfConfig::spiConfig);
+    eepIf.init(&EepIfConfig::spiConfig);
+    modbus.init(ModbusConfig::baudrate);
 
     boardPins.init(); //Call after all other internal peripherials have been initialised.
 
@@ -101,7 +121,7 @@ void BRD_init(void)
 
 SPI_Master wzSPI(WzIfConfig::spi);
 SPI_Channel wzChannel(&wzSPI, WzIfConfig::csPin, SPI_Channel::CS_Polarity::activeLow);
-FastIo wzRstPin(BoardPins::Pin::WZ_RST_N);
+FastIo wzRstPin(BoardPins::Pin::W_RST_N);
 
 SPI_Master eepSpi(EepIfConfig::spi);
 SPI_Channel eepIf(&eepSpi, EepIfConfig::csPin, SPI_Channel::CS_Polarity::activeHigh);

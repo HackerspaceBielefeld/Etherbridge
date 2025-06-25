@@ -10,8 +10,10 @@
 
 #include <cstdint>
 
+#define ENABLE_DHCP
+
 /****** IP Settings ******/
-const bool DEFAULT_AUTO_IP = false;
+const bool DEFAULT_AUTO_IP = true;
 #define DEFAULT_STATIC_IP \
   { 192, 168, 133, 254 }  // Default Static IP
 #define DEFAULT_SUBMASK \

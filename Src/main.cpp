@@ -99,26 +99,42 @@ uint8_t test = 0x55;
 uint8_t testBuf[256];
 size_t testBufSize;
 
+static void setMacAddr(void)
+{
+    data.mac[0] = 0x00; //Wiznet
+    data.mac[1] = 0x08; //MAC
+    data.mac[2] = 0xDC; //Prefix
+
+    CRC->CR |= CRC_CR_RESET;
+    while(CRC->CR & CRC_CR_RESET);
+
+    CRC->DR = SYS_uid[0];
+    CRC->DR = SYS_uid[1];
+    CRC->DR = SYS_uid[2];
+
+    uint32_t crcForMac = CRC->DR;
+
+    data.mac[3] = crcForMac & 0xFF;
+    data.mac[4] = (crcForMac >> 8) & 0xFF;
+    data.mac[5] = (crcForMac >> 16) & 0xFF;
+
+    RCC->AHB1ENR &= ~(RCC_AHB1ENR_CRCEN);
+}
+
 void setup(void)
 {
     BRD_init();
 
     data.config = DEFAULT_CONFIG;
-    data.mac[5] = 0x90;
-    data.mac[4] = 0xA2;
-    data.mac[3] = 0xDA;
-    data.mac[2] = 0x01;
-    data.mac[1] = 0x02;
-    data.mac[0] = 0x03;
 
-    modbus.init(ModbusConfig::baudrate);
+    setMacAddr();
+
+
     startEthernet();
 
     millisNow = SysTick_GetMillis();
 
-    eepIf.init(&EepIfConfig::spiConfig);
 
-    eepIf.begin();
 }
 
 int main(void)
@@ -159,4 +175,10 @@ extern "C" void HardFault_Handler(void)
 {
     for(;;);
 }
+
+extern "C" void BusFault_Handler(void)
+{
+    for(;;);
+}
+
 

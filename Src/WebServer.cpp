@@ -451,7 +451,7 @@ void sendPage(EthernetClient &client, uint8_t reqPage) {
     chunked.print(data.config.webPort);
   }
   chunked.print((">"
-                  "<title>Modbus RTU &rArr; Modbus TCP/UDP Gateway</title>"
+                  "<title>Modbus RTU "/*&rArr;*/ "and Modbus TCP/UDP Gateway</title>"
                   "<style>"
                   /*
                   HTML Tags
@@ -491,7 +491,7 @@ void sendPage(EthernetClient &client, uint8_t reqPage) {
                   "</head>"
                   "<body"));
 #ifdef ENABLE_DHCP
-  chunked.print(F(" onload=g(document.getElementById('o').checked)>"
+  chunked.print((" onload=g(document.getElementById('o').checked)>"
                   "<script>function g(h) {var x = document.getElementsByClassName('p');for (var i = 0; i < x.length; i++) {x[i].disabled = h}}</script"));
 #endif /* ENABLE_DHCP */
   if (reqPage == PAGE_STATUS) {
@@ -1040,15 +1040,15 @@ void contentIp(ChunkedPrint &chunked) {
   tagDivClose(chunked);
 
 #ifdef ENABLE_DHCP
-  tagLabelDiv(chunked, F("Auto IP"));
-  chunked.print(F("<input type=hidden name="));
+  tagLabelDiv(chunked, ("Auto IP"));
+  chunked.print(("<input type=hidden name="));
   chunked.print(POST_DHCP, HEX);
-  chunked.print(F(" value=0>"
+  chunked.print((" value=0>"
                   "<input type=checkbox id=o name="));
   chunked.print(POST_DHCP, HEX);
-  chunked.print(F(" onclick=g(this.checked) value=1"));
-  if (data.config.enableDhcp) chunked.print(F(" checked"));
-  chunked.print(F("> DHCP"));
+  chunked.print((" onclick=g(this.checked) value=1"));
+  if (data.config.enableDhcp) chunked.print((" checked"));
+  chunked.print(("> DHCP"));
   tagDivClose(chunked);
 #endif /* ENABLE_DHCP */
 

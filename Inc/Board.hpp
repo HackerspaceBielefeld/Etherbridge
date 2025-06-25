@@ -12,6 +12,8 @@
 #include "SPI_Channel.h"
 #include "RS485.hpp"
 
+extern uint32_t SYS_uid[3];
+
 extern SPI_Master wzSPI;
 extern SPI_Channel wzChannel;
 extern FastIo wzRstPin;

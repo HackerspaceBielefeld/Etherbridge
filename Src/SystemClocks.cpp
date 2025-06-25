@@ -25,7 +25,7 @@
 /**
  * Enables the instruction cache and the hit and miss monitors
  */
-static void McuICacheEnable(void)
+void McuICacheEnable(void)
 {
     constexpr uint32_t tmpCr = ICacheConfig::mismon | ICacheConfig::hitmon | ICacheConfig::enable;
     ICACHE->CR = tmpCr;
@@ -98,6 +98,5 @@ void SysClk_setup250MHz(void)
     while(((RCC->CFGR1 & RCC_CFGR1_SWS) >> RCC_CFGR1_SWS_Pos) != 3);
 
     SystemCoreClockUpdate();
-    McuICacheEnable();
     //Done
 }

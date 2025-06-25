@@ -48,7 +48,6 @@ uint8_t W5100Class::init(void)
 	delay(560);
 	//Serial.println("w5100 init");
 
-	wzChannel.init(&WzIfConfig::spiConfig);
 	wzChannel.begin();
 
 	// Attempt W5200 detection first, because W5200 does not properly

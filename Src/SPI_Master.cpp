@@ -211,9 +211,7 @@
 
   void SPI_Master::handler(void)
   {
-    uint32_t status = SPIx->SR;
-
-    if(status & SPI_SR_TXP)
+    if(SPIx->SR & SPI_SR_TXP)
     {
       if(txPos < dataLen)
       {
@@ -236,7 +234,7 @@
       }
     }
 
-    if(status & SPI_SR_RXP)
+    if(SPIx->SR & SPI_SR_RXP)
     {
       volatile uint8_t * spiDr = reinterpret_cast<volatile uint8_t *>(&SPIx->RXDR);
       if(!noRx)
