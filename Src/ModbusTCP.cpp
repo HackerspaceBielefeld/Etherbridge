@@ -14,7 +14,6 @@
 #include "ModbusTCP.h"
 #include "crc.hpp"
 #include "SysTick.h"
-#include "WebServer.hpp"
 
 uint8_t masks[8] = { 1, 2, 4, 8, 16, 32, 64, 128 };
 
@@ -34,23 +33,19 @@ void startEthernet() {
     wzRstPin.set();
     rstTimer.delay(ETH_RESET_DELAY);
 
-#ifdef ENABLE_DHCP
   if (data.config.enableDhcp) {
     dhcpSuccess = Ethernet.begin(data.mac);
   }
   if (!data.config.enableDhcp || dhcpSuccess == false) {
     Ethernet.begin(data.mac, data.config.ip, data.config.dns, data.config.gateway, data.config.subnet);
   }
-#else  /* ENABLE_DHCP */
-  Ethernet.begin(data.mac, data.config.ip, {}, data.config.gateway, data.config.subnet);  // No DNS
-#endif /* ENABLE_DHCP */
   W5100.setRetransmissionTime(TCP_RETRANSMISSION_TIMEOUT);
   W5100.setRetransmissionCount(TCP_RETRANSMISSION_COUNT);
   modbusServer = EthernetServer(data.config.tcpPort);
-  webServer = EthernetServer(data.config.webPort);
+//  webServer = EthernetServer(data.config.webPort);
   Udp.begin(data.config.udpPort);
   modbusServer.begin();
-  webServer.begin();
+//  webServer.begin();
 #if MAX_SOCK_NUM > 4
   if (W5100.getChip() == 51) maxSockNum = 4;  // W5100 chip never supports more than 4 sockets
 #endif
@@ -58,9 +53,6 @@ void startEthernet() {
 
 void recvTcp(EthernetClient &client) {
   uint16_t msgLength = client.available();
-#ifdef ENABLE_EXTENDED_WEBUI
-  data.ethCnt[DATA_RX] += msgLength;
-#endif                             /* ENABLE_EXTENDED_WEBUI */
   uint8_t inBuffer[MODBUS_SIZE + 4];  // Modbus TCP frame is 4 bytes longer than Modbus RTU frame
                                    // Modbus TCP/UDP frame: [0][1] transaction ID, [2][3] protocol ID, [4][5] length and [6] unit ID (address).....
                                    // Modbus RTU frame: [0] address.....
@@ -90,10 +82,6 @@ void recvTcp(EthernetClient &client) {
       outBuffer[i++] = highByte(crc);
     }
     client.write(outBuffer, i);
-#ifdef ENABLE_EXTENDED_WEBUI
-    data.ethCnt[DATA_TX] += 5;
-    if (!data.config.enableRtuOverTcp) data.ethCnt[DATA_TX] += 4;
-#endif /* ENABLE_EXTENDED_WEBUI */
   }
 }
 
@@ -133,9 +121,6 @@ void scanRequest() {
 void recvUdp() {
   uint16_t msgLength = Udp.parsePacket();
   if (msgLength) {
-#ifdef ENABLE_EXTENDED_WEBUI
-    data.ethCnt[DATA_RX] += msgLength;
-#endif                               /* ENABLE_EXTENDED_WEBUI */
     uint8_t inBuffer[MODBUS_SIZE + 4];  // Modbus TCP frame is 4 bytes longer than Modbus RTU frame
                                      // Modbus TCP/UDP frame: [0][1] transaction ID, [2][3] protocol ID, [4][5] length and [6] unit ID (address)..... no CRC
                                      // Modbus RTU frame: [0] address.....[n-1][n] CRC
@@ -163,10 +148,6 @@ void recvUdp() {
         Udp.write(highByte(crc));
       }
       Udp.endPacket();
-#ifdef ENABLE_EXTENDED_WEBUI
-      data.ethCnt[DATA_TX] += 5;
-      if (!data.config.enableRtuOverTcp) data.ethCnt[DATA_TX] += 4;
-#endif /* ENABLE_EXTENDED_WEBUI */
     }
   }
 }
@@ -340,18 +321,19 @@ void manageSockets() {
 
   if (dataAvailable != MAX_SOCK_NUM) {
     EthernetClient client = EthernetClient(dataAvailable);
-    if (W5100.readSnPORT(dataAvailable) == data.config.webPort) {
-      recvWeb(client);
-    } else {
+//    if (W5100.readSnPORT(dataAvailable) == data.config.webPort) {
+//      recvWeb(client);
+//    } else {
       recvTcp(client);
-    }
+//    }
   }
 
   if (modbusListening == MAX_SOCK_NUM) {
     modbusServer.begin();
-  } else if (webListening == MAX_SOCK_NUM) {
-    webServer.begin();
   }
+//  else if (webListening == MAX_SOCK_NUM) {
+//    webServer.begin();
+//  }
 
   // If needed, disconnect socket that's been idle (ESTABLISHED without data recieved) the longest
   if (oldest != MAX_SOCK_NUM && socketsAvailable == 0 && (webListening == MAX_SOCK_NUM || modbusListening == MAX_SOCK_NUM)) {
@@ -360,6 +342,7 @@ void manageSockets() {
 
   while(wzChannel.end() != SUCCESS);  // Serves to o release the bus for other devices to access it. Since the ethernet chip is the only device
   // we do not need SPI.beginTransaction(SPI_ETHERNET_SETTINGS) or SPI.endTransaction() ??
+  Ethernet.maintain(); //Manage DHCP
 }
 
 /**************************************************************************/
@@ -394,10 +377,6 @@ void sendResponse(const uint8_t MBAP[], const uint8_t PDU[], const uint16_t pduL
       Udp.write(PDU, pduLength - 2);  //send without CRC
     }
     Udp.endPacket();
-#ifdef ENABLE_EXTENDED_WEBUI
-    data.ethCnt[DATA_TX] += pduLength;
-    if (!data.config.enableRtuOverTcp) data.ethCnt[DATA_TX] += 4;
-#endif /* ENABLE_EXTENDED_WEBUI */
   } else if (myHeader.requestType & TCP_REQUEST) {
       uint8_t sock = myHeader.requestType & TCP_REQUEST_MASK;
     EthernetClient client = EthernetClient(sock);
@@ -407,10 +386,6 @@ void sendResponse(const uint8_t MBAP[], const uint8_t PDU[], const uint16_t pduL
         client.write(MBAP, 6);
         client.write(PDU, pduLength - 2);  //send without CRC
       }
-#ifdef ENABLE_EXTENDED_WEBUI
-      data.ethCnt[DATA_TX] += pduLength;
-      if (!data.config.enableRtuOverTcp) data.ethCnt[DATA_TX] += 4;
-#endif /* ENABLE_EXTENDED_WEBUI */
     }  // TODO TCP Connection Error
   }    // else SCAN_REQUEST (no data.ethCnt[DATA_TX], but yes delete request)
   deleteRequest();

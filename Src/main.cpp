@@ -79,18 +79,6 @@ uint8_t responseLen;                 // stores actual length of the response sho
 uint16_t queueDataSize;
 uint8_t queueHeadersSize;
 
-#ifdef ENABLE_EXTENDED_WEBUI
-// store uptime seconds (includes seconds counted before millis() overflow)
-uint32_t seconds;
-// store last millis() so that we can detect millis() overflow
-uint32_t last_milliseconds = 0;
-// store seconds passed until the moment of the overflow so that we can add them to "seconds" on the next call
-int32_t remaining_seconds;
-// Data counters (we only use uint32_t in ENABLE_EXTENDED_WEBUI, to save flash memory)
-#endif /* ENABLE_EXTENDED_WEBUI */
-
-uint32_t millisNow;
-
 FastIo ledPin(BoardPins::Pin::LED);
 
 
@@ -129,12 +117,9 @@ void setup(void)
 
     setMacAddr();
 
-
-    startEthernet();
-
-    millisNow = SysTick_GetMillis();
-
-
+    do{
+        startEthernet();
+    } while(!dhcpSuccess);
 }
 
 int main(void)
@@ -150,19 +135,7 @@ int main(void)
 	    recvSerial();
 	    manageSockets();
 
-	    if(SysTick_GetMillis() - millisNow >= 500)
-	    {
-	        millisNow = SysTick_GetMillis();
-	        if(ledPin.get())
-	        {
-	            ledPin.clr();
-	        }
-	        else
-	        {
-	            ledPin.set();
-	        }
-	    }
-
+	    ledPin.set();
 	}
 }
 

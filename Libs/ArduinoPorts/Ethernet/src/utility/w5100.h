@@ -14,7 +14,6 @@
 #ifndef	W5100_H_INCLUDED
 #define	W5100_H_INCLUDED
 
-//#include <Arduino.h>
 #include "SPI_Channel.h"
 
 #define ETHERNET_LARGE_BUFFERS
