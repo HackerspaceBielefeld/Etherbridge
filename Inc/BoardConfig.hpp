@@ -45,7 +45,8 @@ namespace PllConfig
 {
 //For details regarding pll configuration, see RefMan, p.460
 constexpr uint8_t preDivFactor = 20;    //25MHz / 20 = 1,25MHz
-constexpr uint8_t postDivFactor = 1;    //Output diviter = 1
+constexpr uint8_t postDivFactor = 1;    //Output divider = 1
+constexpr uint8_t postDivFactorSPI = 2;    //Output divider = 2
 constexpr uint16_t multFactor = 200;    //VCO multiplier = 200; 200 + 1,25MHz = 250MHz
 constexpr uint8_t clkSrcHSE = 3;        //Clock Source = HSE
 
@@ -56,7 +57,7 @@ constexpr uint8_t clkSrcFieldWidth = 2;
 
 //No output division
 constexpr uint32_t P_OutputDivider = BitsAndFields::writeBits(0, postDivFactor-1, divFieldWidth, RCC_PLL1DIVR_PLL1P_Pos);
-constexpr uint32_t Q_OutputDivider = BitsAndFields::writeBits(0, postDivFactor-1, divFieldWidth, RCC_PLL1DIVR_PLL1Q_Pos);
+constexpr uint32_t Q_OutputDivider = BitsAndFields::writeBits(0, postDivFactorSPI-1, divFieldWidth, RCC_PLL1DIVR_PLL1Q_Pos);
 constexpr uint32_t R_OutputDivider = BitsAndFields::writeBits(0, postDivFactor-1, divFieldWidth, RCC_PLL1DIVR_PLL1R_Pos);
 //VCO multiplier = 200 * 1,25MHz = 250MHz
 constexpr uint32_t vcoMulti = BitsAndFields::writeBits(0, multFactor-1, multFieldWidth, RCC_PLL1DIVR_PLL1N_Pos);
@@ -84,7 +85,7 @@ namespace WzIfConfig
 constexpr BoardPins::Pin csPin = BoardPins::Pin::W_CS_N;
 SPI_TypeDef * const spi = SPI1;
 constexpr SPI_Master::SPI_Config spiConfig = {
-    SPI_Master::Prescaler::DIV_8,
+    SPI_Master::Prescaler::DIV_4,
     SPI_Master::SPI_Mode::MODE_0,
     SPI_Master::BitOrder::MSB_FIRST
 };
