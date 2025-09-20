@@ -222,7 +222,6 @@ void EthernetClass::setRetransmissionTimeout(uint16_t milliseconds)
 void EthernetClass::setRetransmissionCount(uint8_t num)
 {
     while(wzChannel.begin() != SUCCESS);
-
 	W5100.setRetransmissionCount(num);
 	while(wzChannel.end() != SUCCESS);
 }
