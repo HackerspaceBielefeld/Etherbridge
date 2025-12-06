@@ -129,7 +129,6 @@ int main(void)
     //Main loop
 	for(;;)
 	{
-//	    scanRequest();
 	    sendSerial();
 	    recvUdp();
 	    recvSerial();
