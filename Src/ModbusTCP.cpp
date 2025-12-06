@@ -207,7 +207,7 @@ uint8_t checkRequest(uint8_t inBuffer[], uint16_t msgLength, const uint32_t remo
     { inBuffer[0], inBuffer[1] },  // tid[2] (ignored in Modbus RTU over TCP/UDP)
     uint8_t(msgLength),               // msgLen
     (IPAddress)remoteIP,           // remIP
-    (unsigned int)remotePort,      // remPort
+    remotePort,      // remPort
     uint8_t(requestType),             // requestType
     0,                             // atts
   });

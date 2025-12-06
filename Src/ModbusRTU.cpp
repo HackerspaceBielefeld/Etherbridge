@@ -14,7 +14,16 @@
 #include "RS485.hpp"
 #include "BoardConfig.hpp"
 
+enum class SerialState : uint8_t
+{
+  IDLE,
+  SENDING,
+  DELAY,
+  WAITING
+};
+
 static uint8_t txBuffer[MODBUS_SIZE];
+SerialState serialState;
 
 /* *******************************************************************
    Modbus RTU functions
@@ -44,7 +53,7 @@ void sendSerial() {
   static uint8_t txNdx = 0;
   header_t myHeader = queueHeaders.first();
   switch (serialState) {
-    case 0:  // IDLE: Optimize queue (prioritize requests from responding slaves) and trigger sending via serial
+    case SerialState::IDLE:  //Optimize queue (prioritize requests from responding slaves) and trigger sending via serial
       while (priorityReqInQueue && (queueHeaders.first().requestType & PRIORITY_REQUEST) == false) {
         // move requests to non responding slaves to the tail of the queue
         for (uint8_t i = 0; i < queueHeaders.first().msgLen; i++) {
@@ -52,9 +61,9 @@ void sendSerial() {
         }
         queueHeaders.push(queueHeaders.shift());
       }
-      serialState++;
+      serialState = SerialState::SENDING;
       break;
-    case 1:  // SENDING:
+    case SerialState::SENDING:
       {
         if (txNdx == 0) {
           crc = 0xFFFF;
@@ -75,12 +84,12 @@ void sendSerial() {
             if(modbus.send(txBuffer, txNdx) == SUCCESS)
             {
                 txNdx = 0;
-                serialState++;
+                serialState = SerialState::DELAY;
             }
         }
       }
       break;
-    case 2:  // DELAY:
+    case SerialState::DELAY:
       {
 #ifdef ENABLE_EXTENDED_WEBUI
         data.rtuCnt[DATA_TX] += myHeader.msgLen;
@@ -92,10 +101,10 @@ void sendSerial() {
         uint32_t delay = data.config.serialTimeout;
         if (myHeader.requestType & SCAN_REQUEST) delay = SCAN_TIMEOUT;  // fixed timeout for scan requests
         sendMicroTimer.sleep(delay * 1000UL);
-        serialState++;
+        serialState = SerialState::WAITING;
       }
       break;
-    case 3:  // WAITING: Deal with Serial timeouts (i.e. Modbus RTU timeouts)
+    case SerialState::WAITING: //Deal with Serial timeouts (i.e. Modbus RTU timeouts)
       {
         if (myHeader.requestType & SCAN_REQUEST) {  // Only one attempt for scan request (we do not count attempts)
           deleteRequest();
@@ -123,7 +132,7 @@ void sendSerial() {
           setSlaveStatus(queueData[0], SLAVE_ERROR_0B_QUEUE, true, false);
           data.errorCnt[ERROR_TIMEOUT]++;
         }                 // if (myHeader.atts >= MAX_RETRY)
-        serialState = 0;  // IDLE
+        serialState = SerialState::IDLE;
       }
       break;
     default:
@@ -146,7 +155,8 @@ void recvSerial() {
       header_t myHeader = queueHeaders.first();
       serialIn = modbus.getRxBuffer();
 
-      if (checkCRC(serialIn, rxNdx) == true && serialIn[0] == queueData[0] && serialState == WAITING) {
+      if (checkCRC(serialIn, rxNdx) == true && serialIn[0] == queueData[0] && serialState == SerialState::WAITING)
+      {
           if (serialIn[1] > 0x80 && (myHeader.requestType & SCAN_REQUEST) == false) {
             setSlaveStatus(serialIn[0], SLAVE_ERROR_0X, true, false);
           } else {
@@ -162,7 +172,7 @@ void recvSerial() {
           };
 
           sendResponse(MBAP, serialIn, rxNdx);
-          serialState = IDLE;
+          serialState = SerialState::IDLE;
       } else {
           data.errorCnt[ERROR_RTU]++;
       }
