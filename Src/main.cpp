@@ -65,9 +65,6 @@ Timer checkEthTimer;  // timer to check SPI connection with ethernet shield
 
 uint8_t scanCounter = 1;  // Start Modbus RTU scan after boot
 
-
-uint8_t serialState;
-
 /****** RUN TIME AND DATA COUNTERS ******/
 
 bool scanReqInQueue = false;  // Scan request is in the queue
@@ -80,7 +77,6 @@ uint16_t queueDataSize;
 uint8_t queueHeadersSize;
 
 FastIo ledPin(BoardPins::Pin::LED);
-
 
 uint8_t test = 0x55;
 
@@ -124,6 +120,11 @@ void setup(void)
 
 int main(void)
 {
+	//How it works:
+	//Setup Clocks (+ Power level + Flash timings)
+	//Initialize peripherials
+	//Initialize GPIOs
+	//Initialize external components
     setup();
 
     //Main loop

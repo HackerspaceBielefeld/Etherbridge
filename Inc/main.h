@@ -78,14 +78,6 @@ const config_t DEFAULT_CONFIG = {
   DEFAULT_ATTEMPTS,
 };
 
-enum state_t : uint8_t {
-  IDLE,
-  SENDING,
-  DELAY,
-  WAITING
-};
-
-
 #ifdef ENABLE_DHCP
 extern bool dhcpSuccess;
 #endif /* ENABLE_DHCP */
@@ -115,7 +107,5 @@ extern uint8_t response[MAX_RESPONSE_LEN];
 
 extern MicroTimer recvMicroTimer;
 extern MicroTimer sendMicroTimer;
-
-extern uint8_t serialState;
 
 #endif /* MAIN_H_ */
