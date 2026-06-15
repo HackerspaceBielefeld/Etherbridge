@@ -253,7 +253,8 @@ void manageSockets() {
   uint8_t webListening = MAX_SOCK_NUM;
   uint8_t dataAvailable = MAX_SOCK_NUM;
   uint8_t socketsAvailable = 0;
-  while(wzChannel.begin() != SUCCESS);  // begin SPI transaction
+  // No outer SPI transaction here: every W5100/socket access below opens and
+  // closes its own wzChannel transaction (see SPI_Channel begin/end contract).
   // look at all the hardware sockets, record and take action based on current states
   for (uint8_t s = 0; s < maxSockNum; s++) {            // for each hardware socket ...
     uint8_t status = W5100.readSnSR(s);                 //  get socket status...
@@ -340,8 +341,6 @@ void manageSockets() {
     disconSocket(oldest);
   }
 
-  while(wzChannel.end() != SUCCESS);  // Serves to o release the bus for other devices to access it. Since the ethernet chip is the only device
-  // we do not need SPI.beginTransaction(SPI_ETHERNET_SETTINGS) or SPI.endTransaction() ??
   Ethernet.maintain(); //Manage DHCP
 }
 

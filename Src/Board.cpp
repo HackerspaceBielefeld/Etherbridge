@@ -13,6 +13,7 @@
 #include "BitsAndFields.hpp"
 #include "SysTick.h"
 #include "FastIo.hpp"
+#include "Eeprom93LC86.hpp"
 
 uint32_t SYS_uid[3];
 
@@ -105,6 +106,8 @@ void BRD_init(void)
 
     boardPins.init(); //Call after all other internal peripherials have been initialised.
 
+    eeprom.init(); //After boardPins.init(): drives ORG/PE which are GPIO outputs.
+
     initTim2ForMicroSecs(microTim);
 
     NVIC_SetPriority(SPI1_IRQn, 0);
@@ -125,6 +128,9 @@ FastIo wzRstPin(BoardPins::Pin::W_RST_N);
 
 SPI_Master eepSpi(EepIfConfig::spi);
 SPI_Channel eepIf(&eepSpi, EepIfConfig::csPin, SPI_Channel::CS_Polarity::activeHigh);
+
+// Defined after eepIf so the reference is bound to a constructed channel.
+Eeprom93LC86 eeprom(eepIf, BoardPins::Pin::EEP_ORG, BoardPins::Pin::EEP_PE);
 
 RS485<256> modbus(ModbusConfig::usart);
 

@@ -48,7 +48,9 @@ uint8_t W5100Class::init(void)
 	delay(560);
 	//Serial.println("w5100 init");
 
-	wzChannel.begin();
+	// No outer SPI transaction: every register access below (write/read)
+	// opens and closes its own wzChannel transaction. Transactions must not
+	// be nested (see SPI_Channel begin/end contract).
 
 	// Attempt W5200 detection first, because W5200 does not properly
 	// reset its SPI state when CS goes high (inactive).  Communication
@@ -77,11 +79,6 @@ uint8_t W5100Class::init(void)
 			writeSnTX_SIZE(i, 0);
 		}
 #endif
-	// Try W5100 last.  This simple chip uses fixed 4 byte frames
-	// for every 8 bit access.  Terribly inefficient, but so simple
-	// it recovers from "hearing" unsuccessful W5100 or W5200
-	// communication.  W5100 is also the only chip without a VERSIONR
-	// register for identification, so we check this last.
 	}
 	// No hardware seems to be present.  Or it could be a W5200
 	// that's heard other SPI communication if its chip select
@@ -91,7 +88,6 @@ uint8_t W5100Class::init(void)
 		chip = 0;
 		return 0; // no known chip is responding :-(
 	}
-	while(wzChannel.end() != SUCCESS);
 	initialized = true;
 	return 1; // successful init
 }
@@ -139,17 +135,14 @@ W5100Linkstatus W5100Class::getLinkStatus()
 	uint8_t phystatus;
 
 	if (!init()) return UNKNOWN;
+	// readPSTATUS/readPHYCFGR open and close their own wzChannel transaction.
 	switch (chip) {
 	  case 52:
-	    wzChannel.begin();
 		phystatus = readPSTATUS_W5200();
-		while(wzChannel.end() != SUCCESS);
 		if (phystatus & 0x20) return LINK_ON;
 		return LINK_OFF;
 	  case 55:
-	    wzChannel.begin();;
 		phystatus = readPHYCFGR_W5500();
-		while(wzChannel.end() != SUCCESS);
 		if (phystatus & 0x01) return LINK_ON;
 		return LINK_OFF;
 	  default:

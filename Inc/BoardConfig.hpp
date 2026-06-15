@@ -96,9 +96,9 @@ namespace EepIfConfig
 constexpr BoardPins::Pin csPin = BoardPins::Pin::EEP_CS;
 SPI_TypeDef * const spi = SPI3;
 constexpr SPI_Master::SPI_Config spiConfig = {
-    SPI_Master::Prescaler::DIV_256,
+    SPI_Master::Prescaler::DIV_64,
     SPI_Master::SPI_Mode::MODE_0,
-    SPI_Master::BitOrder::MSB_FIRST
+	SPI_Master::BitOrder::MSB_FIRST
 };
 }
 

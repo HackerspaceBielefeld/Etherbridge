@@ -109,6 +109,10 @@ static void setMacAddr(void)
     RCC->AHB1ENR &= ~(RCC_AHB1ENR_CRCEN);
 }
 
+// TODO(eeprom): temporary hardware bring-up check. Inspect via debugger, then
+// remove once EEPROM config persistence is wired up.
+volatile bool eepromSelfTestOk = false;
+
 void setup(void)
 {
     BRD_init();
@@ -116,6 +120,8 @@ void setup(void)
     data.config = DEFAULT_CONFIG;
 
     setMacAddr();
+
+    eepromSelfTestOk = eeprom.selfTest();
 
     do{
         startEthernet();

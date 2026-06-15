@@ -11,6 +11,7 @@
 #include "SPI_Master.h"
 #include "SPI_Channel.h"
 #include "RS485.hpp"
+#include "Eeprom93LC86.hpp"
 
 extern uint32_t SYS_uid[3];
 
@@ -20,6 +21,7 @@ extern FastIo wzRstPin;
 
 extern SPI_Master eepSpi;
 extern SPI_Channel eepIf;
+extern Eeprom93LC86 eeprom;
 
 extern RS485<256> modbus;
 
